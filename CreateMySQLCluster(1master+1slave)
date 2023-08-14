@@ -1,0 +1,30 @@
+1. Open and edit /etc/mysql/mysql.conf.d/mysqld.cnf   
+bind-address = "my actual ip adress"
+server-id =1
+expire_logs_days=10
+2. Restart sql server
+3. login to mysql cli
+4. CREATE USER 'replica'@'ip.of.mirror.serv' IDENTIFIED BY 'abc@123';
+5. GRANT REPLICATION SLAVE ON *.* 'replica'@'ip.of.mirror.serv'
+6. SHOW MASTER STATUS; -> save information somewhere
+7. mysqldump -u root -p --all-databases --master-data > dbdump.sql
+8. scp dbdump.sql 10.0.50.55:/tmp
+9. cd tmp
+10. Open and edit /etc/mysql/mysql.conf.d/mysqld.cnf   
+11. change: bind-address = ip.of.my.mirror
+12. change: server-id = 2
+13. uncomment: log_bin
+14. start msql service
+15. do the dump mysql -u root -p < /tmp/dbdump.sql
+16. log in into sql with root: mysql -u root -p
+17. enter: show databases
+18. command: stop slave
+19. sql query:
+
+CHANGE MASTER TO,
+MASTER_HOST='ipofmasterhost',
+MASTER_USER='replica',
+MASTER_PASSWORD='abc@123',
+MASTER_LOG_FILE='takefromsavedstatus',
+MASTER_LOG_POS=619;
+20. command: start slave
